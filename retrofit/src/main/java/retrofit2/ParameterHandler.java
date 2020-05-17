@@ -110,14 +110,8 @@ abstract class ParameterHandler<T> {
     @Override
     void apply(RequestBuilder builder, @Nullable T value) throws IOException {
       String final_value = valueConverter.convert(value);
-      if (!TextUtils.isEmpty(fix)){
-        if (fix.contains("#")){
-          final_value = final_value.replaceAll("#",final_value);
-        }else{
-          final_value = fix.concat(final_value);
-        }
-      }
-      builder.addPathParam(name, final_value, encoded);
+
+      builder.addPathParam(name, final_value, fix, encoded);
     }
   }
 

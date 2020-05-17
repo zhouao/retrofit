@@ -15,9 +15,13 @@
  */
 package retrofit2;
 
+import android.text.TextUtils;
+
 import java.io.IOException;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import javax.xml.soap.Text;
+
 import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -116,13 +120,32 @@ final class RequestBuilder {
     headersBuilder.addAll(headers);
   }
 
-  void addPathParam(String name, String value, boolean encoded) {
+  void addPathParam(String name, String value, String fix,boolean encoded) {
     if (relativeUrl == null) {
       // The relative URL is cleared when the first query parameter is set.
       throw new AssertionError();
     }
-    String replacement = canonicalizeForPath(value, encoded);
-    String newRelativeUrl = relativeUrl.replace("{" + name + "}", replacement);
+    String replacement = null;
+    if (!TextUtils.isEmpty(value)){
+      replacement = canonicalizeForPath(value, encoded);
+      if (!TextUtils.isEmpty(fix)){
+          if (fix.contains("#")) {
+            replacement = fix.replaceAll("#", replacement);
+          } else {
+            replacement = fix.concat(replacement);
+          }
+      }
+    }else{
+      replacement = "";
+    }
+    String token1 = "{" + name + "}";
+    String newRelativeUrl = relativeUrl;
+   /* if (replacement.isEmpty()) {
+      String token2 = "/" + token1;
+      newRelativeUrl = newRelativeUrl.replace(token2,replacement);
+    }*/
+    newRelativeUrl = newRelativeUrl.replace(token1, replacement);
+
     if (PATH_TRAVERSAL.matcher(newRelativeUrl).matches()) {
       throw new IllegalArgumentException(
           "@Path parameters shouldn't perform path traversal ('.' or '..'): " + value);
@@ -131,6 +154,9 @@ final class RequestBuilder {
   }
 
   private static String canonicalizeForPath(String input, boolean alreadyEncoded) {
+    if (input == null){
+      return "";
+    }
     int codePoint;
     for (int i = 0, limit = input.length(); i < limit; i += Character.charCount(codePoint)) {
       codePoint = input.codePointAt(i);
@@ -152,6 +178,9 @@ final class RequestBuilder {
 
   private static void canonicalizeForPath(
       Buffer out, String input, int pos, int limit, boolean alreadyEncoded) {
+    if (input == null){
+      return;
+    }
     Buffer utf8Buffer = null; // Lazily allocated.
     int codePoint;
     for (int i = pos; i < limit; i += Character.charCount(codePoint)) {

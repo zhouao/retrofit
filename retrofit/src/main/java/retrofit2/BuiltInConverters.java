@@ -122,6 +122,9 @@ final class BuiltInConverters extends Converter.Factory {
 
     @Override
     public String convert(Object value) {
+      if (value == null){
+        return null;
+      }
       return value.toString();
     }
   }
