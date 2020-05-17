@@ -15,6 +15,8 @@
  */
 package retrofit2;
 
+import android.text.TextUtils;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -93,27 +95,29 @@ abstract class ParameterHandler<T> {
   }
 
   static final class Path<T> extends ParameterHandler<T> {
-    private final Method method;
-    private final int p;
     private final String name;
     private final Converter<T, String> valueConverter;
     private final boolean encoded;
+    private String fix;
 
-    Path(Method method, int p, String name, Converter<T, String> valueConverter, boolean encoded) {
-      this.method = method;
-      this.p = p;
+    Path(Method method, int p, String name, String fix, Converter<T, String> valueConverter, boolean encoded) {
       this.name = Objects.requireNonNull(name, "name == null");
       this.valueConverter = valueConverter;
       this.encoded = encoded;
+      this.fix = fix;
     }
 
     @Override
     void apply(RequestBuilder builder, @Nullable T value) throws IOException {
-      if (value == null) {
-        throw Utils.parameterError(
-            method, p, "Path parameter \"" + name + "\" value must not be null.");
+      String final_value = valueConverter.convert(value);
+      if (!TextUtils.isEmpty(fix)){
+        if (fix.contains("#")){
+          final_value = final_value.replaceAll("#",final_value);
+        }else{
+          final_value = fix.concat(final_value);
+        }
       }
-      builder.addPathParam(name, valueConverter.convert(value), encoded);
+      builder.addPathParam(name, final_value, encoded);
     }
   }
 

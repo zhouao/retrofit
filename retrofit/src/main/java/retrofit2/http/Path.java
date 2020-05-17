@@ -59,6 +59,7 @@ import retrofit2.Retrofit;
 @Target(PARAMETER)
 public @interface Path {
   String value();
+  String fix() default "";
 
   /**
    * Specifies whether the argument value to the annotated method parameter is already URL encoded.

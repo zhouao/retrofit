@@ -141,7 +141,7 @@ final class RequestFactory {
     // Upper and lower characters, digits, underscores, and hyphens, starting with a character.
     private static final String PARAM = "[a-zA-Z][a-zA-Z0-9_-]*";
     private static final Pattern PARAM_URL_REGEX = Pattern.compile("\\{(" + PARAM + ")\\}");
-    private static final Pattern PARAM_NAME_REGEX = Pattern.compile(PARAM);
+    //private static final Pattern PARAM_NAME_REGEX = Pattern.compile(PARAM);
 
     final Retrofit retrofit;
     final Method method;
@@ -413,10 +413,11 @@ final class RequestFactory {
 
         Path path = (Path) annotation;
         String name = path.value();
-        validatePathName(p, name);
+        String fix = path.fix();
+        //validatePathName(p, name);
 
         Converter<?, String> converter = retrofit.stringConverter(type, annotations);
-        return new ParameterHandler.Path<>(method, p, name, converter, path.encoded());
+        return new ParameterHandler.Path<>(method, p, name, fix, converter, path.encoded());
 
       } else if (annotation instanceof Query) {
         validateResolvableType(p, type);
@@ -815,7 +816,7 @@ final class RequestFactory {
       }
     }
 
-    private void validatePathName(int p, String name) {
+/*    private void validatePathName(int p, String name) {
       if (!PARAM_NAME_REGEX.matcher(name).matches()) {
         throw parameterError(
             method,
@@ -828,7 +829,7 @@ final class RequestFactory {
       if (!relativeUrlParamNames.contains(name)) {
         throw parameterError(method, p, "URL \"%s\" does not contain \"{%s}\".", relativeUrl, name);
       }
-    }
+    }*/
 
     /**
      * Gets the set of unique path parameters used in the given URI. If a parameter is used twice in
